@@ -1,11 +1,13 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import LargeBinary
+from sqlalchemy import LargeBinary, Table, Column, Integer, ForeignKey
 from passlib.hash import pbkdf2_sha256 as sha256
 from flask import request, jsonify
+from flask_cors import CORS
 import base64
 
 app = Flask(__name__)
+CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:admin@localhost/music-app-db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -28,6 +30,11 @@ class User(db.Model):
     def verify_hash(password, hash):
         return sha256.verify(password, hash)
 
+association_table = Table('association', db.Model.metadata,
+    Column('playlist_id', Integer, ForeignKey('playlists.id')),
+    Column('music_id', Integer, ForeignKey('musics.id'))
+)
+
 class Music(db.Model):
     __tablename__ = "musics"
     id = db.Column(db.Integer, primary_key=True)
@@ -37,6 +44,8 @@ class Music(db.Model):
     mp3_file = db.Column(LargeBinary, nullable=True) 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('musics', lazy=True))
+    like = db.Column(db.Boolean,nullable=True)
+    playlists = db.relationship('Playlist', secondary=association_table, back_populates='musics')
 
 class Playlist(db.Model):
     __tablename__ = "playlists"
@@ -44,6 +53,7 @@ class Playlist(db.Model):
     name = db.Column(db.String(100), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('playlists', lazy=True))
+    musics = db.relationship('Music', secondary=association_table, back_populates='playlists')
 
 with app.app_context():
     db.create_all()
@@ -141,7 +151,8 @@ def create_music():
         artist=data['artist'],
         image=request.files['image'].read() if 'image' in request.files else None,
         mp3_file=request.files['mp3_file'].read() if 'mp3_file' in request.files else None,
-        user_id=user.id
+        user_id=user.id,
+        like=False
     )
 
     db.session.add(new_music)
