@@ -18,10 +18,23 @@
                     </div>
                 </div>
                 <div class="header__sign">
-                    <div class="header__sign-in">Sign In</div>
-                    <div class="header__sign-up">Sign Up</div>
+                    <template v-if="isLoggedIn">
+                        <Logout />
+                    </template>
+                    <template v-else>
+                        <Login />
+                        <Register />
+                    </template>
                 </div>
             </div>
         </div>
     </div>
 </template>
+
+<script setup>
+    import Login from "./Login.vue";
+    import Register from "./Register.vue";
+    import Logout from "./Logout.vue";
+
+    const isLoggedIn = typeof localStorage !== 'undefined' && localStorage.getItem("user_id");
+</script>

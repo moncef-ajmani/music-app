@@ -51,6 +51,7 @@ class Playlist(db.Model):
     __tablename__ = "playlists"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
+    image = db.Column(LargeBinary, nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('playlists', lazy=True))
     musics = db.relationship('Music', secondary=association_table, back_populates='playlists')
@@ -110,11 +111,6 @@ def delete_user(user_id):
 
 @app.route('/user/<int:user_id>/music', methods=['GET'])
 def get_user_music(user_id):
-    # data = request.json
-    # user_id = data.get('user_id')
-
-    # if not user_id:
-    #     return jsonify({'message': 'User ID is required in the request body'}), 400
 
     user = User.query.get(user_id)
     if not user:
@@ -127,6 +123,7 @@ def get_user_music(user_id):
     music_list = []
     for music in user_music:
         music_data = {
+            'id':music.id,
             'title': music.title,
             'artist': music.artist,
             'image': base64.b64encode(music.image).decode('utf-8') if music.image else None,
@@ -136,10 +133,59 @@ def get_user_music(user_id):
 
     return jsonify({'music': music_list}), 200
 
+@app.route('/user/<int:user_id>/favorits', methods=['GET'])
+def get_user_music_favorits(user_id):
+
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+
+    user_music = Music.query.filter_by(user_id=user_id).all()
+    if not user_music:
+        return jsonify({'message': 'No music found for this user'}), 404
+    print(user_music)
+    music_list = []
+    for music in user_music:
+        if music.like:
+            music_data = {
+                'id':music.id,
+                'title': music.title,
+                'artist': music.artist,
+                'image': base64.b64encode(music.image).decode('utf-8') if music.image else None,
+                'mp3_file': base64.b64encode(music.mp3_file).decode('utf-8') if music.mp3_file else None
+            }
+
+            music_list.append(music_data)
+
+    return jsonify({'music': music_list}), 200
+
+@app.route('/user/<int:user_id>/playlists', methods=['GET'])
+def get_user_playlist(user_id):
+
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+
+    user_playlists = Playlist.query.filter_by(user_id=user_id).all()
+    if not user_playlists:
+        return jsonify({'message': 'No music found for this user'}), 404
+    print(user_playlists)
+    playlists = []
+    for playlist in user_playlists:
+        playlist_data = {
+            'id':playlist.id,
+            'name': playlist.name,
+            'image': base64.b64encode(playlist.image).decode('utf-8') if playlist.image else None,
+        }
+        playlists.append(playlist_data)
+
+    return jsonify({'data': playlists}), 200
+
 # Music endpoints
 @app.route('/music', methods=['POST'])
 def create_music():
     data = request.form
+    print(data)
     user_id = data.get('user_id')
     user = User.query.get(user_id)
     
@@ -160,18 +206,41 @@ def create_music():
     
     return jsonify({'message': 'New music created!'})
 
+@app.route('/music/<int:music_id>/add_fav', methods=['POST'])
+def add_to_fav(music_id):
+    music = Music.query.get(music_id)
+
+    music.like = True
+    
+    db.session.commit()
+    
+    return jsonify({'message': 'Music added to favorits successfully'})
+
+@app.route('/music/<int:music_id>/remove_fav', methods=['POST'])
+def remove_from_fav(music_id):
+    music = Music.query.get(music_id)
+
+    music.like = False
+    
+    db.session.commit()
+    
+    return jsonify({'message': 'Music removed from favorits successfully'})
 
 # Playlist endpoints
-@app.route('/playlists', methods=['POST'])
+@app.route('/playlist', methods=['POST'])
 def create_playlist():
-    data = request.get_json()
-    new_playlist = Playlist(name=data['name'], user_id=data['user_id'])
+    data = request.form
+    new_playlist = Playlist(
+        name=data['name'], 
+        user_id=data['user_id'], 
+        image=request.files['image'].read() if 'image' in request.files else None
+    )
     db.session.add(new_playlist)
     db.session.commit()
     return jsonify({'message': 'New playlist created!'})
 
-@app.route('/playlists', methods=['GET'])
-def get_all_playlists():
-    playlists = Playlist.query.all()
-    result = [{'id': playlist.id, 'name': playlist.name, 'user_id': playlist.user_id} for playlist in playlists]
-    return jsonify(result)
+# @app.route('/playlists', methods=['GET'])
+# def get_all_playlists():
+#     playlists = Playlist.query.all()
+#     result = [{'id': playlist.id, 'name': playlist.name, 'user_id': playlist.user_id} for playlist in playlists]
+#     return jsonify(result)

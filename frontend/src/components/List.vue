@@ -37,13 +37,14 @@
     }
     const props = defineProps({
         listData: {
-        type: Array,
-        required: true
+          type: Array,
+          required: true
         },
         title: {
-        type: String,
-        required: true
-        }
+          type: String,
+          required: true
+        },
+       
     });
     
 </script>
