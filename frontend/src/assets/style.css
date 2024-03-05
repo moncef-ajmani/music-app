@@ -229,6 +229,19 @@ body{
     width: 20px;
     cursor: pointer;
 }
+.list__item-add-list img{
+    width: 30px;
+}
+.dropdown-menu{
+    padding: 0;
+}
+.dropdown-item{
+    padding: 8px 16px;
+}
+.dropdown-item:hover{
+    background-color: #252525;
+    color: #fff;
+}
 /* End List */
 
 /* Start Player */

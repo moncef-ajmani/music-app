@@ -4,10 +4,10 @@
     <div class="container">
         <div class="row">
             <div class="col-5">
-                <Library :playlists="playlists.data"/>
+                <Library :playlists="playlists.data" @fetchUploads="fetchUploads" @fetchFavorits="fetchFavorits" /> 
             </div>
             <div class="col-7">
-                <List :listData="uploads.music" :title="title"/>
+                <List :playlists="playlists.data" :listData="data.music" :title="title" @fetchUploads="fetchUploads" @fetchFavorits="fetchFavorits"/>
             </div>
         </div>
     </div>
@@ -24,22 +24,30 @@
 
     const uploads = ref([]);
     const playlists = ref([]);
+    const data = ref([]);
 
     const title = "My Uploads";
     
     onMounted(async () => {
+        await fetchUploads();
+        await fetchPlaylists();
+    });
+
+    async function fetchFavorits(){
         try {
-            const response = await fetch('http://localhost:5000/user/1/music');
+            const response = await fetch('http://localhost:5000/user/1/favorits');
             
             if (!response.ok) {
-                throw new Error('Failed to fetch uploads');
+                throw new Error('Failed to fetch playlists');
             }
-            uploads.value = await response.json();
-            console.log(uploads.value);
+            data.value = await response.json();
+            console.log("Favorits: ",data.value);
         } catch (error) {
-            console.error('Error fetching uploads:', error);
+            console.error('Error fetching playlists:', error);
         }
+    }
 
+    async function fetchPlaylists(){
         try {
             const response = await fetch('http://localhost:5000/user/1/playlists');
             
@@ -47,9 +55,22 @@
                 throw new Error('Failed to fetch playlists');
             }
             playlists.value = await response.json();
-            console.log(playlists.value);
+            console.log("Playlists: ",playlists.value);
         } catch (error) {
             console.error('Error fetching playlists:', error);
         }
-    });
+    }
+    async function fetchUploads(){
+        try {
+            const response = await fetch('http://localhost:5000/user/1/music');
+            
+            if (!response.ok) {
+                throw new Error('Failed to fetch uploads');
+            }
+            data.value = await response.json();
+            console.log("Uploads: ",data.value);
+        } catch (error) {
+            console.error('Error fetching uploads:', error);
+        }
+    }
 </script>

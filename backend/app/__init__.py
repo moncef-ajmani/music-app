@@ -127,7 +127,8 @@ def get_user_music(user_id):
             'title': music.title,
             'artist': music.artist,
             'image': base64.b64encode(music.image).decode('utf-8') if music.image else None,
-            'mp3_file': base64.b64encode(music.mp3_file).decode('utf-8') if music.mp3_file else None
+            'mp3_file': base64.b64encode(music.mp3_file).decode('utf-8') if music.mp3_file else None,
+            'like':music.like
         }
         music_list.append(music_data)
 
@@ -152,7 +153,8 @@ def get_user_music_favorits(user_id):
                 'title': music.title,
                 'artist': music.artist,
                 'image': base64.b64encode(music.image).decode('utf-8') if music.image else None,
-                'mp3_file': base64.b64encode(music.mp3_file).decode('utf-8') if music.mp3_file else None
+                'mp3_file': base64.b64encode(music.mp3_file).decode('utf-8') if music.mp3_file else None,
+                'like':music.like
             }
 
             music_list.append(music_data)
@@ -239,8 +241,49 @@ def create_playlist():
     db.session.commit()
     return jsonify({'message': 'New playlist created!'})
 
-# @app.route('/playlists', methods=['GET'])
-# def get_all_playlists():
-#     playlists = Playlist.query.all()
-#     result = [{'id': playlist.id, 'name': playlist.name, 'user_id': playlist.user_id} for playlist in playlists]
-#     return jsonify(result)
+@app.route('/playlist/<int:playlist_id>/add_music', methods=['POST'])
+def add_music_to_playlist(playlist_id):
+    # Assuming the request contains JSON data with music_id
+    request_data = request.get_json()
+
+    music_id = request_data.get('music_id')
+    if music_id is None:
+        return jsonify({'error': 'No music_id provided'}), 400
+
+    # Fetch the playlist and music objects from the database
+    playlist = Playlist.query.get_or_404(playlist_id)
+    music = Music.query.get_or_404(music_id)
+
+    # Add the music to the playlist
+    playlist.musics.append(music)
+    
+    # Commit the changes to the database
+    db.session.commit()
+
+    return jsonify({'message': f'Music added to playlist {playlist.name} successfully'}), 200
+
+def get_music_by_playlist_id(playlist_id):
+    playlist = Playlist.query.get(playlist_id)
+    if playlist:
+        return playlist.musics
+    else:
+        return []
+    
+@app.route('/playlist/<int:playlist_id>/music', methods=['GET'])
+def get_music_by_playlist(playlist_id):
+    music = get_music_by_playlist_id(playlist_id)
+    if music:
+        # Create a list of music data for the playlist
+        music_list = [{
+            'id':track.id,
+            'title': track.title,
+            'artist': track.artist,
+            'image': base64.b64encode(track.image).decode('utf-8') if track.image else None,
+            'mp3_file': base64.b64encode(track.mp3_file).decode('utf-8') if track.mp3_file else None,
+            'like':track.like
+            # Add more attributes as needed
+        } for track in music]
+
+        return jsonify(music_list), 200
+    else:
+        return jsonify({'error': 'Playlist not found'}), 404

@@ -5,7 +5,7 @@
             <!-- <div class="library__header-add"><img src="assets/images/plus.png"/></div> -->
         </div>
         <div class="library__list">
-            <div class="library__list-item active">
+            <div class="library__list-item active" @click="callFetchUploads">
                 <div class="library__list-item-image"><img src="@/assets/images/upload.png"/></div>
                 <div class="library__list-item-content">
                     <div class="library__list-item-title">Uploads</div>
@@ -15,7 +15,7 @@
                     <UploadMusic />
                 </div>
             </div>
-            <div class="library__list-item">
+            <div class="library__list-item" @click="callFetchFavorits">
                 <div class="library__list-item-image"><img src="@/assets/images/heart.png"/></div>
                 <div class="library__list-item-content">
                     <div class="library__list-item-title">Likes</div>
@@ -33,7 +33,6 @@
                 </div>
             </div>
             <div class="sub__list ml-5">
-
                 <div class="library__list-item" v-for="(playlist,index) in playlists" :key="index">
                     <div class="library__list-item-image"><img :src="getBase64Image(playlist.image)" class="playlist-img"/></div>
                     <div class="library__list-item-content">
@@ -49,6 +48,15 @@
 <script setup>
     import UploadMusic from './UploadMusic.vue';
     import AddPlaylist from './AddPlaylist.vue';
+
+    const emit = defineEmits(['fetchFavorits','fetchUploads']);
+
+    const callFetchFavorits = () =>{
+        emit("fetchFavorits");
+    }
+    const callFetchUploads = () =>{
+        emit("fetchUploads");
+    }
 
     function getBase64Image(base64String) {
         return `data:image/jpeg;base64,${base64String}`;

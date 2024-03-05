@@ -61,7 +61,7 @@
 
       
     onMounted(()=> {
-        console.log(props);
+        // console.log(props);
         // musicTitle = props.music[0].title;
 
         // Set audio source

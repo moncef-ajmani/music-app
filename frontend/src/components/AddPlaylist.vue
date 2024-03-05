@@ -44,6 +44,7 @@
         image: null,
     });
 
+
     const submitForm = () => {
         const data = new FormData();
         data.append('name', formData.value.name);
