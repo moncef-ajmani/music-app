@@ -9,7 +9,7 @@
         </div>
       </div>
       <div class="list__items">
-        <div class="list__item" v-for="(item, index) in listData" :key="index">
+        <div class="list__item" v-for="(item, index) in listData" :key="index" @click="setCurrentMusic(item)">
           <div class="list__item-id">{{ index + 1 }}</div>
           <div class="list__item-image">
             <img :src="getBase64Image(item.image)" alt="">
@@ -37,7 +37,8 @@
 <script setup>
     import { defineProps } from 'vue';
     import axios from 'axios';
-    const emit = defineEmits(['fetchFavorits','fetchUploads']);
+    const emit = defineEmits(['fetchFavorits','fetchUploads','setCurrentMusic']);
+
     function getBase64Image(base64String) {
         return `data:image/jpeg;base64,${base64String}`;
     };
@@ -101,6 +102,10 @@
             required: true
         }
     });
+
+    function setCurrentMusic(music){
+      emit("setCurrentMusic",music);
+    }
     
 </script>
   

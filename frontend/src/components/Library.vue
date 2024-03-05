@@ -33,7 +33,7 @@
                 </div>
             </div>
             <div class="sub__list ml-5">
-                <div class="library__list-item" v-for="(playlist,index) in playlists" :key="index">
+                <div class="library__list-item" v-for="(playlist,index) in playlists" :key="index" @click="callFetchPlaylistById(playlist.id,playlist.name)">
                     <div class="library__list-item-image"><img :src="getBase64Image(playlist.image)" class="playlist-img"/></div>
                     <div class="library__list-item-content">
                         <div class="library__list-item-title">{{ playlist.name }}</div>
@@ -49,7 +49,7 @@
     import UploadMusic from './UploadMusic.vue';
     import AddPlaylist from './AddPlaylist.vue';
 
-    const emit = defineEmits(['fetchFavorits','fetchUploads']);
+    const emit = defineEmits(['fetchFavorits','fetchUploads','fetchPlaylistById']);
 
     const callFetchFavorits = () =>{
         emit("fetchFavorits");
@@ -58,6 +58,9 @@
         emit("fetchUploads");
     }
 
+    const callFetchPlaylistById = (playlist_id,name) =>{
+        emit("fetchPlaylistById",playlist_id,name)
+    }
     function getBase64Image(base64String) {
         return `data:image/jpeg;base64,${base64String}`;
     };

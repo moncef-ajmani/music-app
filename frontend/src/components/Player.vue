@@ -1,12 +1,12 @@
 <template>
-    <div class="player">
+    <div class="player" v-if="current">
         <div class="player__music">
             <div class="player__music-image">
-                <img src="@/assets/images/music.png" />
+                <img :src="getBase64Image(current?.image)"/>
             </div>
             <div class="player__music-content">
-                <div class="player__music-title">212</div>
-                <div class="player__music-artist">Dada, Rita Kamale, NAB FAKE</div>
+                <div class="player__music-title">{{ current?.title }}</div>
+                <div class="player__music-artist">{{ current?.artist }}</div>
             </div>
             <div class="player__music-like"><img src="@/assets/images/plus.png"/></div>
         </div>
@@ -37,65 +37,28 @@
         <div class="player__volume">
             <img src="@/assets/images/volume.png" alt="">
             <progress value="3" max="10"></progress>
+            <div>{{ queue?.length }}</div>
         </div>
+        
+        <!-- <audio controls :src="getBase64Audio(props?.musics[0].mp3_file)"></audio> -->
     </div>
 </template>
 
 <script setup>
-    import { defineProps, onMounted, ref } from 'vue';
+    import { defineProps } from 'vue';
     const props = defineProps({
-        music: {
-            type: Array,
-            required: true
+        queue:{
+            type:Array
+        },
+        current:{
+            type:Object
         }
     });
+    function getBase64Image(base64String) {
+        return `data:image/jpeg;base64,${base64String}`;
+    };
 
-    let isPlaying = false;
-    let currentTime = 0;
-    let totalTime = 0;
-    let volume = 0.5;
-    let audio = new Audio();
-    const musicTitle = ref("");
-    const musicArtist = ref("");
-    const audioBytes = ref("");
-
-      
-    onMounted(()=> {
-        // console.log(props);
-        // musicTitle = props.music[0].title;
-
-        // Set audio source
-        audio.src = "data:audio/mpeg;base64," + audioBytes;
-
-        // Listen for audio events
-        audio.addEventListener('loadedmetadata', () => {
-            totalTime = audio.duration;
-        });
-
-        audio.addEventListener('timeupdate', () => {
-            currentTime = audio.currentTime;
-        });
-
-        audio.addEventListener('ended', () => {
-            isPlaying = false;
-        });
-    }),
-   
-    function togglePlay() {
-        if (isPlaying) {
-            audio.pause();
-        } else {
-            audio.volume = volume;
-            audio.play();
-        }
-        isPlaying = !isPlaying;
-    }
-    function formatTime(seconds) {
-        const min = Math.floor(seconds / 60);
-        const sec = Math.floor(seconds % 60);
-        return `${min}:${sec < 10 ? '0' : ''}${sec}`;
-    }
-    function seek(event) {
-        audio.currentTime = event.target.value;
+    function getBase64Audio(base64String) {
+        return `data:audio/mp3;base64,${base64String}`;
     }
 </script>
