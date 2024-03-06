@@ -3,7 +3,7 @@
       <div class="list__header">
         <div class="list__header-title">{{ title }}</div>
         <div class="list__header-controls">
-          <div class="control play"><img src="@/assets/images/play.png" /></div>
+          <div class="control play" @click="setCurrentMusic(listData[0])"><img src="@/assets/images/play.png" /></div>
           <div class="control shuffle"><img src="@/assets/images/shuffle.png" /></div>
           <div class="control download"><img src="@/assets/images/download.png" /></div>
         </div>
