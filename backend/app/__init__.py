@@ -246,22 +246,33 @@ def add_music_to_playlist(playlist_id):
     # Assuming the request contains JSON data with music_id
     request_data = request.get_json()
 
+    # Validate whether music_id is provided
     music_id = request_data.get('music_id')
     if music_id is None:
         return jsonify({'error': 'No music_id provided'}), 400
 
-    # Fetch the playlist and music objects from the database
+    # Fetch the playlist object from the database or return a 404 error if not found
     playlist = Playlist.query.get_or_404(playlist_id)
+
+    # Fetch the music object from the database or return a 404 error if not found
     music = Music.query.get_or_404(music_id)
+
+    # Check if the music is already in the playlist
+    if music in playlist.musics:
+        return jsonify({'error': 'Music is already in the playlist'}), 400
 
     # Add the music to the playlist
     playlist.musics.append(music)
+
+    try:
+        # Commit the changes to the database
+        db.session.commit()
+        return jsonify({'message': f'Music added to playlist {playlist.name} successfully'}), 200
+    except Exception as e:
+        # Rollback the session in case of any exception
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
     
-    # Commit the changes to the database
-    db.session.commit()
-
-    return jsonify({'message': f'Music added to playlist {playlist.name} successfully'}), 200
-
 def get_music_by_playlist_id(playlist_id):
     playlist = Playlist.query.get(playlist_id)
     if playlist:
@@ -272,18 +283,16 @@ def get_music_by_playlist_id(playlist_id):
 @app.route('/playlist/<int:playlist_id>/music', methods=['GET'])
 def get_music_by_playlist(playlist_id):
     music = get_music_by_playlist_id(playlist_id)
-    if music:
-        # Create a list of music data for the playlist
-        music_list = [{
-            'id':track.id,
-            'title': track.title,
-            'artist': track.artist,
-            'image': base64.b64encode(track.image).decode('utf-8') if track.image else None,
-            'mp3_file': base64.b64encode(track.mp3_file).decode('utf-8') if track.mp3_file else None,
-            'like':track.like
-            # Add more attributes as needed
-        } for track in music]
+   
+    # Create a list of music data for the playlist
+    music_list = [{
+        'id':track.id,
+        'title': track.title,
+        'artist': track.artist,
+        'image': base64.b64encode(track.image).decode('utf-8') if track.image else None,
+        'mp3_file': base64.b64encode(track.mp3_file).decode('utf-8') if track.mp3_file else None,
+        'like':track.like
+        # Add more attributes as needed
+    } for track in music]
 
-        return jsonify(music_list), 200
-    else:
-        return jsonify({'error': 'Playlist not found'}), 404
+    return jsonify({"music":music_list}), 200

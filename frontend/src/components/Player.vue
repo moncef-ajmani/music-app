@@ -30,7 +30,10 @@
             </div>
             <div class="player__contols-progress">
                 <div class="player__contols-progress-time">1:22</div>
-                <div class="player__contols-progress-bar"><progress value="3" max="10"></progress></div>
+                <div class="player__contols-progress-bar">
+                    <!-- <progress value="3" max="10"></progress> -->
+                    <audio controls :src="getBase64Audio(queue)"></audio>
+                </div>
                 <div class="player__contols-progress-time-total">2:15</div>
             </div>
         </div>
@@ -38,9 +41,9 @@
             <img src="@/assets/images/volume.png" alt="">
             <progress value="3" max="10"></progress>
             <div>{{ queue?.length }}</div>
+            
         </div>
         
-        <!-- <audio controls :src="getBase64Audio(props?.musics[0].mp3_file)"></audio> -->
     </div>
 </template>
 
@@ -61,4 +64,13 @@
     function getBase64Audio(base64String) {
         return `data:audio/mp3;base64,${base64String}`;
     }
+
+    let songsIndex = 1;
+    // Initially load song info
+    loadSong(songs[songsIndex])
+
+    function loadSong(){
+
+    }
+
 </script>
