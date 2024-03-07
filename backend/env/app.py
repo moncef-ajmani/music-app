@@ -65,6 +65,7 @@ def register():
     data = request.get_json()
     hashed_password = User.generate_hash(data['password'])
     new_user = User(username=data['username'], password=hashed_password)
+    
     db.session.add(new_user)
     db.session.commit()
     return jsonify({'message': 'New user created!'})
@@ -74,7 +75,7 @@ def login():
     data = request.get_json()
     user = User.query.filter_by(username=data['username']).first()
     if not user or not User.verify_hash(data['password'], user.password):
-        return jsonify({'message': 'Invalid username or password'})
+        return jsonify({'message': 'Invalid username or password'}), 400
     return jsonify({'id':user.id,'username':user.username,'message': 'Login successful'})
 
 

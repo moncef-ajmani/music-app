@@ -24,7 +24,7 @@
             </div>
             <div class="modal-footer pb-0">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-              <button type="submit" class="btn btn-primary">Register</button>
+              <button type="submit" class="btn btn-primary">Login</button>
             </div>
           </form>
         </div>
