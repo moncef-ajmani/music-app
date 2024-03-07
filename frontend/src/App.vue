@@ -5,13 +5,13 @@
     <div class="container">
         <div class="row" v-if="isLoggedIn">
             <div class="col-5">
-                <Library :playlists="playlists.data" @fetchUploads="fetchUploads" @fetchFavorits="fetchFavorits" @fetchPlaylistById="fetchPlaylistById" /> 
+                <Library :totalPlaylists="totalPlaylists" :totalFavorits="totalFavorits" :totalUploads="totalUploads" :playlists="playlists.data" @fetchUploads="fetchUploads" @fetchFavorits="fetchFavorits" @fetchPlaylistById="fetchPlaylistById"/> 
             </div>
             <div class="col-7">
-                <List :playlists="playlists.data" :listData="data.music" :title="title" @fetchUploads="fetchUploads" @fetchFavorits="fetchFavorits" @setCurrentMusic="setCurrentMusic"/>
+                <List :playlists="playlists.data" :listData="data.music" :title="title" @fetchUploads="fetchUploads" @fetchFavorits="fetchFavorits" @setCurrentMusic="setCurrentMusic" @shuffle="shuffle"/>
             </div>
         </div>
-        <h2 class="m-5" v-else >You Should Login!!</h2>
+        <h2 class="m-5" v-else>You Should Login!!</h2>
     </div>
 
     <Player :queue="data.music" :current="currentMusic" />
@@ -31,9 +31,14 @@
     const data = ref([]);
     const currentMusic = ref(null);
 
+    const totalUploads = ref(0);
+    const totalFavorits = ref(0);
+    const totalPlaylists = ref(0);
+
     const title = ref("My Uploads");
     
     onMounted(async () => {
+        await fetchFavorits();
         await fetchUploads();
         await fetchPlaylists();
     });
@@ -48,14 +53,16 @@
             data.value = await response.json();
             title.value = "My Likes";
             console.log("Favorits: ",data.value);
+            totalFavorits.value = data.value.music.length;
         } catch (error) {
             console.error('Error fetching playlists:', error);
         }
     }
     function setCurrentMusic(music){
-        console.log("current:",music);
-        // console.log(data.value);
         currentMusic.value = music;
+    }
+    function shuffle(){
+        data.value.music = [...data.value.music].sort(() => Math.random() - 0.5);
     }
     async function fetchPlaylists(){
         try {
@@ -66,6 +73,7 @@
             }
             playlists.value = await response.json();
             console.log("Playlists: ",playlists.value);
+            totalPlaylists.value = playlists.value.data.length;
         } catch (error) {
             console.error('Error fetching playlists:', error);
         }
@@ -80,6 +88,7 @@
             data.value = await response.json();
             title.value = "My Uploads";
             console.log("Uploads: ",data.value);
+            totalUploads.value = data.value.music.length
         } catch (error) {
             console.error('Error fetching uploads:', error);
         }

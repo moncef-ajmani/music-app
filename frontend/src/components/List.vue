@@ -3,9 +3,9 @@
       <div class="list__header">
         <div class="list__header-title">{{ title }}</div>
         <div class="list__header-controls">
-          <div class="control play"><img src="@/assets/images/play.png" /></div>
-          <div class="control shuffle"><img src="@/assets/images/shuffle.png" /></div>
-          <div class="control download"><img src="@/assets/images/download.png" /></div>
+          <div class="control play" @click="setCurrentMusic(listData[0])"><img src="@/assets/images/play.png" /></div>
+          <div class="control shuffle" @click="shuffle"><img src="@/assets/images/shuffle.png" /></div>
+          <!-- <div class="control download"><img src="@/assets/images/download.png" /></div> -->
         </div>
       </div>
       <div class="list__items">
@@ -24,11 +24,16 @@
             <img src="@/assets/images/add-list.png" class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"/>
             <div class="dropdown">
               <ul class="dropdown-menu">
-                <li v-for="(playlist,index) in playlists" :key="index" class="dropdown-item" @click="addMusicToPlaylist(item.id,playlist.id)">{{ playlist.name }}</li>
+                <li v-for="(playlist,index) in playlists" :key="index" class="dropdown-item" @click="addMusicToPlaylist(item.id,playlist.id)">
+                  {{ playlist.name }}
+                </li>
               </ul>
             </div>
           </div>
-          <!-- <audio controls :src="getBase64Audio(item.mp3_file)" v-if="item.mp3_file"></audio> -->
+          <div class="list__item-delete-music">
+            <img src="@/assets/images/trash.png" @click="deleteMusic(item.id)"/>
+          </div>
+
         </div>
       </div>
     </div>
@@ -37,7 +42,7 @@
 <script setup>
     import { defineProps } from 'vue';
     import axios from 'axios';
-    const emit = defineEmits(['fetchFavorits','fetchUploads','setCurrentMusic']);
+    const emit = defineEmits(['fetchFavorits','fetchUploads','setCurrentMusic','shuffle']);
 
     function getBase64Image(base64String) {
         return `data:image/jpeg;base64,${base64String}`;
@@ -46,7 +51,16 @@
     function getBase64Audio(base64String) {
         return `data:audio/mp3;base64,${base64String}`;
     }
-
+    const deleteMusic =  async (id) =>{
+        console.log("delete:",id);
+        axios.delete(`http://localhost:5000/music/${id}`)
+        .then((response)=>{
+            window.location.href = "/";
+        })
+        .catch (error=> {
+            console.error('Error deleting music:', error);
+        });
+    }
     function addMusicToPlaylist(music_id,playlist_id){
       console.log(`Add Music ${music_id} to the Playlist: ${playlist_id}`);
       try {
@@ -91,20 +105,21 @@
     const props = defineProps({
         listData: {
           type: Array,
-          required: true
         },
         title: {
           type: String,
-          required: true
         },
         playlists:{
             type: Array,
-            required: true
         }
     });
-
+    
     function setCurrentMusic(music){
       emit("setCurrentMusic",music);
+    }
+
+    function shuffle(){
+      emit("shuffle");
     }
     
 </script>
